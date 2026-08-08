@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viva Voce — Oral Exam Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #182422;
+    --bg-2: #1f2f2c;
+    --paper: #F4EFE4;
+    --paper-2: #EAE2D2;
+    --ink: #241E17;
+    --ink-soft: #5B5346;
+    --brass: #C9A24B;
+    --brass-dim: #8f7736;
+    --vh: #993C1D;
+    --vh-text: #FAECE7;
+    --high: #E8975E;
+    --high-text: #3D2410;
+    --med: #F0C36A;
+    --med-text: #3D2E0A;
+    --line: rgba(244,239,228,0.14);
+    --shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 50% -10%, #24413B 0%, transparent 55%),
+      var(--bg);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:40px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .header{
+    text-align:center;
+    max-width:640px;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:650;
+    font-size:clamp(34px,6vw,52px);
+    letter-spacing:-0.01em;
+    margin:0 0 10px;
+    color:var(--paper);
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--brass);
+  }
+  .sub{
+    font-size:14.5px;
+    color:rgba(244,239,228,0.62);
+    line-height:1.55;
+    margin:0 auto;
+    max-width:460px;
+  }
+
+  /* category chips */
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+    margin:26px 0 6px;
+    max-width:720px;
+  }
+  .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.03em;
+    padding:8px 14px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    background:rgba(244,239,228,0.04);
+    color:rgba(244,239,228,0.75);
+    cursor:pointer;
+    transition:all .15s ease;
+    user-select:none;
+  }
+  .chip:hover{border-color:rgba(201,162,75,0.5); color:var(--paper);}
+  .chip.active{
+    background:var(--brass);
+    border-color:var(--brass);
+    color:#241E17;
+    font-weight:600;
+  }
+  .pool-count{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:rgba(244,239,228,0.4);
+    margin-bottom:28px;
+    letter-spacing:0.02em;
+  }
+  .pool-count b{color:var(--brass); font-weight:600;}
+
+  /* wheel area */
+  .wheel-wrap{
+    position:relative;
+    width:min(78vw,480px);
+    height:min(78vw,480px);
+    margin:10px 0 30px;
+  }
+  .pointer{
+    position:absolute;
+    top:-6px;
+    left:50%;
+    transform:translateX(-50%);
+    width:0; height:0;
+    border-left:16px solid transparent;
+    border-right:16px solid transparent;
+    border-top:26px solid var(--brass);
+    z-index:5;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,0.5));
+  }
+  .pointer::after{
+    content:'';
+    position:absolute;
+    top:-30px; left:-4px;
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--brass);
+  }
+  .hub-ring{
+    position:absolute;
+    inset:-8px;
+    border-radius:50%;
+    background: conic-gradient(from 0deg, #7a6226, #C9A24B, #f0d98a, #C9A24B, #7a6226);
+    z-index:1;
+  }
+  .wheel-svg{
+    position:relative;
+    z-index:2;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    display:block;
+    filter:drop-shadow(0 18px 30px rgba(0,0,0,0.45));
+    transition: transform 4.2s cubic-bezier(.13,.85,.16,1);
+  }
+  .hub{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:19%;
+    height:19%;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #f0d98a, #C9A24B 55%, #8f7736 100%);
+    border:3px solid #241E17;
+    z-index:4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5) inset, 0 6px 14px rgba(0,0,0,0.4);
+  }
+  .hub svg{ width:42%; height:42%; }
+
+  .spin-btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#241E17;
+    background:var(--brass);
+    border:none;
+    padding:15px 34px;
+    border-radius:100px;
+    cursor:pointer;
+    box-shadow:0 10px 24px -8px rgba(201,162,75,0.55);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .spin-btn:hover{transform:translateY(-1px); box-shadow:0 14px 28px -8px rgba(201,162,75,0.7);}
+  .spin-btn:active{transform:translateY(1px);}
+  .spin-btn:disabled{opacity:0.45; cursor:default; transform:none;}
+
+  .legend{
+    display:flex;
+    gap:18px;
+    margin-top:22px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:rgba(244,239,228,0.55);
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  /* ticket / reveal card */
+  .ticket-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(10,14,13,0.72);
+    backdrop-filter: blur(3px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .ticket-backdrop.show{opacity:1; pointer-events:auto;}
+  .ticket{
+    background:var(--paper);
+    color:var(--ink);
+    width:min(560px, 100%);
+    max-height:88vh;
+    overflow-y:auto;
+    border-radius:6px;
+    position:relative;
+    box-shadow:var(--shadow);
+    transform:translateY(18px) scale(0.97);
+    transition:transform .32s cubic-bezier(.2,.9,.25,1.05);
+  }
+  .ticket-backdrop.show .ticket{transform:translateY(0) scale(1);}
+  .ticket::before, .ticket::after{
+    content:'';
+    position:absolute;
+    left:0; right:0;
+    height:14px;
+    background-image: radial-gradient(circle, var(--bg) 5px, transparent 5.5px);
+    background-size: 20px 20px;
+    background-position: -4px center;
+  }
+  .ticket::before{ top:-7px; }
+  .ticket::after{ bottom:-7px; }
+
+  .ticket-head{
+    padding:26px 30px 18px;
+    border-bottom:1px dashed rgba(36,30,23,0.25);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .ticket-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .ticket-meta .case-no{color:var(--ink); font-weight:600;}
+  .tier-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:0.05em;
+    padding:5px 10px;
+    border-radius:100px;
+    white-space:nowrap;
+  }
+  .tier-badge.vh{background:var(--vh); color:var(--vh-text);}
+  .tier-badge.high{background:var(--high); color:var(--high-text);}
+  .tier-badge.med{background:var(--med); color:var(--med-text);}
+
+  .ticket-body{padding:22px 30px 8px;}
+  .cat-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--brass-dim);
+    margin-bottom:6px;
+  }
+  .topic-name{
+    font-family:'Fraunces',serif;
+    font-weight:650;
+    font-size:clamp(24px,4.4vw,30px);
+    line-height:1.15;
+    margin:0 0 20px;
+    color:var(--ink);
+  }
+  .points-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .points{
+    list-style:none;
+    padding:0;
+    margin:0 0 22px;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  .points li{
+    display:flex;
+    gap:11px;
+    align-items:flex-start;
+    font-size:14.5px;
+    line-height:1.45;
+    cursor:pointer;
+  }
+  .points li .box{
+    flex:0 0 auto;
+    width:16px;height:16px;
+    margin-top:2px;
+    border-radius:4px;
+    border:1.5px solid rgba(36,30,23,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all .12s ease;
+  }
+  .points li.checked .box{ background:var(--vh); border-color:var(--vh); }
+  .points li.checked .box::after{
+    content:'';
+    width:5px;height:8px;
+    border:solid var(--vh-text);
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg) translate(-1px,-1px);
+  }
+  .points li.checked span.txt{ color:rgba(36,30,23,0.45); text-decoration:line-through; }
+
+  .ticket-foot{
+    padding:16px 30px 26px;
+    display:flex;
+    gap:10px;
+    border-top:1px dashed rgba(36,30,23,0.25);
+  }
+  .tf-btn{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:12px 14px;
+    border-radius:6px;
+    border:none;
+    cursor:pointer;
+    transition:opacity .12s ease;
+  }
+  .tf-btn:hover{opacity:0.85;}
+  .tf-primary{ background:var(--ink); color:var(--paper); }
+  .tf-secondary{ background:transparent; color:var(--ink-soft); border:1px solid rgba(36,30,23,0.25); }
+
+  .footnote{
+    margin-top:34px;
+    font-size:11.5px;
+    color:rgba(244,239,228,0.35);
+    text-align:center;
+    max-width:440px;
+    line-height:1.6;
+  }
+
+  @media (max-width:480px){
+    .ticket-head{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="eyebrow">Internal Medicine · Oral Exam Trainer</div>
+    <h1>Viva <em>Voce</em></h1>
+    <p class="sub">Spin for a topic, weighted by how often it's actually been asked. Land on it, then work down the checklist while your friend answers out loud.</p>
+  </div>
+
+  <div class="chips" id="chips"></div>
+  <div class="pool-count" id="poolCount"></div>
+
+  <div class="wheel-wrap">
+    <div class="pointer"></div>
+    <div class="hub-ring"></div>
+    <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 600 600"></svg>
+    <div class="hub">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#241E17" stroke-width="1.6">
+        <path d="M12 21s-7.5-4.6-9.5-9.2C1 8.4 3.1 5 6.6 5c1.9 0 3.5 1 4.4 2.6C11.9 6 13.5 5 15.4 5c3.5 0 5.6 3.4 4.1 6.8C17.5 16.4 12 21 12 21z"/>
+      </svg>
+    </div>
+  </div>
+
+  <button class="spin-btn" id="spinBtn">Spin the wheel</button>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--vh)"></i>Very high — asked constantly</span>
+    <span><i class="dot" style="background:var(--high)"></i>High — recurring</span>
+    <span><i class="dot" style="background:var(--med)"></i>Medium — comes up regularly</span>
+  </div>
+
+  <p class="footnote">Pool is weighted 5:3:1.5 by priority tier, so a spin lands on a very-high topic roughly 3× as often as a medium one. Topics below "medium" (standard/low priority) are left out — they were rarely or never asked in the archive, so they'd just dilute the practice.</p>
+
+  <div class="ticket-backdrop" id="backdrop">
+    <div class="ticket">
+      <div class="ticket-head">
+        <div class="ticket-meta">Case No. <span class="case-no" id="caseNo">001</span><br>Viva Voce · Oral Case Card</div>
+        <div class="tier-badge" id="tierBadge">TIER</div>
+      </div>
+      <div class="ticket-body">
+        <div class="cat-tag" id="catTag">CATEGORY</div>
+        <h2 class="topic-name" id="topicName">Topic</h2>
+        <div class="points-label">Points to hear in the answer</div>
+        <ul class="points" id="pointsList"></ul>
+      </div>
+      <div class="ticket-foot">
+        <button class="tf-btn tf-secondary" id="closeBtn">Close</button>
+        <button class="tf-btn tf-primary" id="spinAgainBtn">Spin again</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const CATS = [
+  {id:'cardio', label:'Cardiovascular'},
+  {id:'resp',   label:'Respiratory'},
+  {id:'gi',     label:'GI / Liver / Pancreas'},
+  {id:'heme',   label:'Hematology'},
+  {id:'endo',   label:'Endocrine'},
+  {id:'renal',  label:'Renal'},
+  {id:'id',     label:'Immunology / ID'},
+  {id:'other',  label:'Other'}
+];
+const WEIGHT = {vh:5, high:3, med:1.5};
+
+const TOPICS = [
+// ---------------- CARDIOVASCULAR ----------------
+{cat:'cardio', tier:'vh', name:'Atrial fibrillation', points:[
+  'Classifies AF correctly — paroxysmal / persistent / long-standing persistent / permanent (permanent = a shared decision, not an ECG finding)',
+  'Calculates CHA₂DS₂-VASc correctly and knows the two items worth 2 points',
+  'States HAS-BLED flags modifiable risk, never on its own a reason to withhold anticoagulation',
+  'Knows the peri-cardioversion rule: <48h vs ≥48h (3 weeks anticoag or TOE) — AND the mandatory 4 weeks after',
+  'Names the mechanical-valve/severe-MS exception (warfarin, not DOAC) and the WPW exception (no AV-nodal blockers)'
+]},
+{cat:'cardio', tier:'high', name:'Arterial hypertension (incl. secondary causes)', points:[
+  'Confirms diagnosis with out-of-office measurement (ABPM/home BP), not office readings alone',
+  'Lists red flags for secondary hypertension (age <30/>55, resistant, grade 3, disproportionate organ damage)',
+  'Names the screening test for at least 3 secondary causes (ARR — Conn, metanephrines — phaeo, renal duplex — renovascular)',
+  'Gives the stepped drug algorithm (combination first-line, not monotherapy) and 2 side effects per class',
+  'Distinguishes emergency (organ damage) from urgency (none) — not by a BP number'
+]},
+{cat:'cardio', tier:'med', name:'Heart failure', points:[
+  'Classifies by EF: HFrEF ≤40 / HFmrEF 41–49 / HFpEF ≥50',
+  'Uses natriuretic peptides correctly, incl. false-low in obesity',
+  'Names the 4 pillars of HFrEF therapy (ARNI/ACE-I-ARB, beta-blocker, MRA, SGLT2i)',
+  'Knows sacubitril/valsartan cannot be given within 36h of an ACE-I',
+  'Avoids non-dihydropyridine CCBs in HFrEF'
+]},
+{cat:'cardio', tier:'med', name:'Infective endocarditis', points:[
+  'Orders 3 blood culture sets from separate sites BEFORE antibiotics',
+  'States modified Duke criteria structure (major/minor, thresholds)',
+  'Names likely organism by context (S. aureus in IVDU/tricuspid; viridans strep post-dental)',
+  'Knows S. gallolyticus (bovis) mandates colonoscopy',
+  'Gives 3 surgical indications: heart failure, uncontrolled infection, embolism prevention'
+]},
+{cat:'cardio', tier:'med', name:'Myocarditis & pericarditis', points:[
+  'Gives 2-of-4 pericarditis criteria incl. pain relieved by sitting forward',
+  'Names the ECG discriminators from STEMI (PR depression, widespread concave ST, no reciprocal change)',
+  'Treats pericarditis with NSAID/aspirin + colchicine, not steroids first-line',
+  'Distinguishes myocarditis (troponin up, normal coronaries) and names cardiac MRI as key test',
+  'Recognises tamponade (Beck\'s triad, pulsus paradoxus) and treats with pericardiocentesis, not diuretics'
+]},
+{cat:'cardio', tier:'med', name:'Ischemic heart disease (angina / NSTEMI / STEMI)', points:[
+  'Uses typical/atypical/non-anginal criteria (exertional, retrosternal, relieved by rest/nitrates)',
+  'Chooses imaging by pretest probability (CT angio low-int, stress imaging higher)',
+  'Distinguishes UA / NSTEMI / STEMI by troponin and ECG',
+  'States 120-minute primary PCI target for STEMI',
+  'Does not exclude ACS on history alone — orders ECG + troponin regardless of a plausible GI story'
+]},
+{cat:'cardio', tier:'med', name:'Syncope', points:[
+  'Splits into reflex / orthostatic / cardiac categories',
+  'Names red flags for cardiac syncope: exertional, supine, no prodrome, FHx sudden death, abnormal ECG',
+  'Orders an ECG in every syncope patient without exception',
+  'Considers aortic stenosis / HCM for exertional syncope specifically',
+  'Distinguishes from seizure (tongue biting, prolonged post-ictal confusion) and rejects TIA as a cause of isolated syncope'
+]},
+{cat:'cardio', tier:'med', name:'Shock (incl. septic)', points:[
+  'Names the 4 types by mechanism: hypovolaemic, cardiogenic, obstructive, distributive',
+  'Gives the haemodynamic profile of septic shock (CO up/normal, SVR down)',
+  'States Sepsis-3 septic shock definition (vasopressor need + lactate >2 despite fluids)',
+  'Names noradrenaline as first-line vasopressor',
+  'Prioritises source control and antibiotics within the first hour for sepsis'
+]},
+
+// ---------------- RESPIRATORY ----------------
+{cat:'resp', tier:'vh', name:'Pulmonary embolism / VTE', points:[
+  'Uses Wells or Geneva correctly and knows Wells has a subjective item, Geneva does not',
+  'States D-dimer is only useful when probability is low/intermediate — never to exclude in high probability',
+  'Names CTPA as first-line imaging; V/Q or leg US as alternatives (renal failure, pregnancy)',
+  'Gives echo signs (McConnell\'s sign, D-shaped LV, 60/60 sign) and ECG signs (T-inversion V1–4, S1Q3T3 and its limits)',
+  'States the AF-vs-PE anticoagulation start difference and gives anticoagulation duration by provoked/unprovoked'
+]},
+{cat:'resp', tier:'vh', name:'Dyspnea — differential diagnosis', points:[
+  'Opens with ABC / life-threatening causes before building the differential',
+  'Uses a systematic framework (airway/parenchyma/pleura/vascular/cardiac/haematological/metabolic/neuromuscular)',
+  'Names anaemia and metabolic acidosis unprompted — the causes candidates forget',
+  'States BNP/NT-proBNP as the key cardiac-vs-pulmonary discriminator',
+  'Knows dyspnea can occur with normal oxygen saturation (anaemia, metabolic acidosis, CO poisoning, anxiety)'
+]},
+{cat:'resp', tier:'med', name:'Pneumonia', points:[
+  'Distinguishes typical vs atypical presentation and organisms',
+  'Names pathogen-specific tests (urinary antigen for pneumococcus/Legionella, PCR for atypicals/viruses)',
+  'Uses CURB-65 to grade severity, states all 5 components',
+  'Names empirical treatment by severity (outpatient vs inpatient vs severe)',
+  'Recognises parapneumonic effusion/empyema drainage criteria'
+]},
+{cat:'resp', tier:'med', name:'Asthma & COPD exacerbation', points:[
+  'States asthma diagnosis needs reversibility (FEV1 rise ≥12%/200mL) and COPD needs post-BD FEV1/FVC <0.7',
+  'Knows ICS-containing therapy is now recommended for all asthma steps, not SABA-only',
+  'Recognises a normal/rising PaCO2 in acute severe asthma as a danger sign, not reassurance',
+  'Gives COPD exacerbation target saturation 88–92% and explains why (hypercapnia risk)',
+  'States NIV for hypercapnic acidosis (pH<7.35) as the intervention with clearest mortality benefit'
+]},
+
+// ---------------- GASTROENTEROLOGY / LIVER / PANCREAS ----------------
+{cat:'gi', tier:'vh', name:'Abdominal pain — approach & DD', points:[
+  'Structures the answer by quadrant/region, not a random disease list',
+  'Names at least one relevant score (Alvarado for appendicitis, Hinchey for diverticulitis)',
+  'Covers the acute-abdomen killers: AAA, mesenteric ischemia, perforation, MI',
+  'Adjusts differential sensibly by age, sex, and associated features',
+  'Answers fast and structured when pushed for a rapid-fire quadrant list (mirrors Santacroce\'s style)'
+]},
+{cat:'gi', tier:'vh', name:'IBD — Crohn\'s disease & ulcerative colitis', points:[
+  'Distinguishes Crohn\'s (skip lesions, transmural, any GI segment) from UC (continuous, mucosal, colon/rectum)',
+  'Describes diagnostic workup: clinical + labs (calprotectin, CRP) + endoscopy + biopsy',
+  'States the modified Montreal classification structure',
+  'Names biologics by class and target (anti-TNF, vedolizumab = α4β7 integrin specifically, ustekinumab, JAK inhibitors)',
+  'Names key complications: toxic megacolon (UC), fistulae/strictures (Crohn\'s), PSC association (UC)'
+]},
+{cat:'gi', tier:'vh', name:'Celiac disease (incl. refractory type 1 vs 2)', points:[
+  'Gives serology (tTG-IgA + total IgA) and biopsy findings (Marsh classification)',
+  'Lists associated autoimmune diseases (T1DM, thyroid, IgA deficiency)',
+  'Names alarm symptoms and the differential of villous atrophy',
+  'Distinguishes refractory celiac type 1 vs type 2 by lymphocyte markers and prognosis',
+  'Handles the "antibodies negative" twist — considers seronegative celiac and other causes of malabsorption'
+]},
+{cat:'gi', tier:'vh', name:'Jaundice — classification & DD', points:[
+  'Classifies pre-hepatic / hepatic / post-hepatic with a mechanism for each',
+  'In an elderly patient, names malignancy (pancreatic head) and hemolysis as the two must-excludes',
+  'Chooses the right imaging (US first, then MRCP/CT) for obstructive jaundice',
+  'Links post-febrile jaundice to hemolysis and spherocytosis appropriately',
+  'Recognises the mixed hyperbilirubinemia pattern of PBC'
+]},
+{cat:'gi', tier:'high', name:'GI bleeding — upper & lower', points:[
+  'Gives a structured "mouth to rectum" differential with mechanism, not just a list',
+  'Distinguishes upper (melaena, hematemesis) vs lower (hematochezia) by presentation',
+  'Names initial resuscitation priorities before diagnostic workup',
+  'Links chronic GI bleeding to iron-deficiency anemia workup',
+  'Knows endoscopy timing and risk scores exist (Glasgow-Blatchford / Rockall) even if not memorised in full'
+]},
+{cat:'gi', tier:'high', name:'Unexplained weight loss — workup', points:[
+  'Structures workup: history, exam, labs, imaging',
+  'Names the 4 big buckets: malignancy, malabsorption, endocrine, chronic infection',
+  'Asks about intentionality and timeframe (>5% body weight over 6–12 months)',
+  'Links to age-appropriate cancer screening',
+  'Considers depression/psychosocial causes without defaulting to them first'
+]},
+{cat:'gi', tier:'high', name:'Cirrhosis & its complications', points:[
+  'Explains ascites pathophysiology (portal hypertension + low oncotic pressure)',
+  'Names key complications: varices, hepatic encephalopathy, hepatorenal syndrome, SBP',
+  'Explains why cirrhotics are at risk of BOTH bleeding and thrombosis',
+  'Uses Child-Pugh or MELD to describe severity',
+  'Names SAAG as the tool to classify ascites (portal hypertensive vs not)'
+]},
+{cat:'gi', tier:'high', name:'Liver function tests / mild transaminase elevation', points:[
+  'Distinguishes hepatocellular (ALT/AST) vs cholestatic (ALP/GGT) patterns',
+  'Gives a structured second-line workup for isolated mild elevation',
+  'Names NAFLD as the most common cause in an asymptomatic patient',
+  'Includes autoimmune hepatitis, viral hepatitis, and drug causes in the differential',
+  'Knows when to biopsy vs when to just monitor and modify risk factors'
+]},
+{cat:'gi', tier:'high', name:'Primary sclerosing cholangitis', points:[
+  'Links PSC to ulcerative colitis',
+  'Describes the cholestatic pattern and "beads on a string" cholangiography finding',
+  'Names cholangiocarcinoma as a feared long-term complication',
+  'Distinguishes from PBC (antibody profile, sex distribution, bile duct level affected)',
+  'Knows there is no proven medical therapy that alters progression'
+]},
+{cat:'gi', tier:'high', name:'H. pylori — testing & eradication', points:[
+  'Names non-invasive tests (urea breath test, stool antigen) and knows PPI/antibiotic washout requirements',
+  'Links H. pylori to PUD, gastric MALT lymphoma, and gastric cancer risk',
+  'Gives an eradication regimen (quadruple or concomitant therapy) given rising clarithromycin resistance',
+  'Knows when biopsy-based testing is preferred (during endoscopy for alarm symptoms)',
+  'States that confirmation of eradication is recommended after treatment'
+]},
+{cat:'gi', tier:'high', name:'Autoimmune atrophic gastritis / pernicious anemia', points:[
+  'Links to B12 deficiency and macrocytic anemia mechanism',
+  'Names anti-parietal cell and anti-intrinsic factor antibodies',
+  'Explains why hypergastrinemia occurs (loss of acid feedback)',
+  'Notes the increased gastric cancer/carcinoid risk requiring endoscopic surveillance',
+  'Distinguishes from H. pylori-related (antral) gastritis by distribution (body-predominant)'
+]},
+{cat:'gi', tier:'med', name:'Acute & chronic pancreatitis', points:[
+  'Uses Atlanta/Ranson-type severity criteria concept, not just "raised lipase"',
+  'Explains why and when CT is used (timing — usually after 72h unless diagnosis unclear)',
+  'Names the two most common causes (gallstones, alcohol)',
+  'Lists local complications (pseudocyst, necrosis) and systemic ones (ARDS, AKI)',
+  'Distinguishes chronic pancreatitis (steatorrhea, calcifications, exocrine/endocrine failure)'
+]},
+{cat:'gi', tier:'med', name:'Acute cholecystitis', points:[
+  'Names lab findings beyond leukocytosis (mildly raised LFTs, bilirubin)',
+  'States Murphy\'s sign and first-line imaging (ultrasound)',
+  'Gives non-surgical management options when surgery is delayed/contraindicated',
+  'Distinguishes from choledocholithiasis and cholangitis by pattern of labs',
+  'Knows timing principles for cholecystectomy'
+]},
+{cat:'gi', tier:'med', name:'Peptic ulcer disease & non-H.pylori/non-NSAID causes', points:[
+  'Names the two dominant causes (H. pylori, NSAIDs) first',
+  'Lists non-Hp/non-NSAID causes: Zollinger-Ellison, Crohn\'s, ulcerative jejunoileitis, malignancy, stress ulcers',
+  'Distinguishes gastric vs duodenal ulcer pain pattern relative to meals',
+  'Knows alarm features that mandate endoscopy',
+  'Names complications: bleeding, perforation, gastric outlet obstruction'
+]},
+{cat:'gi', tier:'med', name:'Dyspepsia — approach', points:[
+  'Screens for alarm symptoms before deciding on empirical management',
+  'Describes test-and-treat H. pylori strategy for uninvestigated dyspepsia',
+  'Uses a time-limited PPI trial appropriately',
+  'Distinguishes functional dyspepsia from organic causes',
+  'Knows when endoscopy is mandatory regardless of age'
+]},
+{cat:'gi', tier:'med', name:'GERD vs PUD', points:[
+  'Distinguishes symptom pattern (postprandial/nocturnal reflux vs epigastric pain relation to food)',
+  'Names complications of GERD (Barrett\'s, stricture)',
+  'Knows PPI trial response supports but doesn\'t confirm either diagnosis alone',
+  'States indications for endoscopy in GERD',
+  'Mentions lifestyle measures as first-line for mild GERD'
+]},
+{cat:'gi', tier:'med', name:'Diarrhea — acute, subacute, chronic', points:[
+  'Structures by duration (acute <2wk, chronic >4wk) and mechanism (secretory/osmotic/inflammatory/motility)',
+  'Orders stool culture and parasitology appropriately for bloody or persistent diarrhea',
+  'Names key infectious causes and travel/exposure history relevance',
+  'Includes celiac disease and IBD in the chronic differential',
+  'Considers malabsorption workup when weight loss or steatorrhea present'
+]},
+{cat:'gi', tier:'med', name:'Diverticular disease', points:[
+  'Distinguishes diverticulosis / SUDD / acute diverticulitis / chronic diverticulitis',
+  'Uses Hinchey classification for complicated diverticulitis',
+  'Names appropriate imaging (CT) and when antibiotics are/aren\'t needed',
+  'Knows indications for surgery',
+  'Distinguishes from other causes of LLQ pain'
+]},
+{cat:'gi', tier:'med', name:'Whipple disease', points:[
+  'Names the causative organism (Tropheryma whipplei)',
+  'Lists classic features: malabsorption, arthralgia, weight loss, CNS involvement',
+  'States the diagnostic test (small bowel biopsy — PAS-positive macrophages)',
+  'Distinguishes from celiac disease as a DD for malabsorption',
+  'Names appropriate prolonged antibiotic treatment'
+]},
+{cat:'gi', tier:'med', name:'Microscopic colitis', points:[
+  'Distinguishes lymphocytic vs collagenous subtype',
+  'Notes normal-appearing colonoscopy with abnormal histology as the key feature',
+  'Links to drug causes (NSAIDs, PPIs, SSRIs)',
+  'Names watery, non-bloody chronic diarrhea as the presentation',
+  'States budesonide as first-line treatment'
+]},
+{cat:'gi', tier:'med', name:'Protein-losing enteropathy', points:[
+  'Explains the mechanism (mucosal disease, lymphatic obstruction, or increased permeability)',
+  'Names a relevant confirmatory test (alpha-1 antitrypsin clearance)',
+  'Lists causes: IBD, celiac, lymphangiectasia, constrictive pericarditis',
+  'Recognises hypoalbuminemia with oedema as the clinical clue',
+  'Distinguishes from liver and renal causes of hypoalbuminemia'
+]},
+{cat:'gi', tier:'med', name:'Autoimmune enteropathy', points:[
+  'Recognises severe chronic diarrhea with villous atrophy unresponsive to gluten-free diet',
+  'Names relevant autoantibodies (anti-enterocyte, anti-goblet cell)',
+  'Distinguishes from refractory celiac disease',
+  'Notes association with other autoimmune conditions / IPEX in children',
+  'States immunosuppression as the treatment approach'
+]},
+{cat:'gi', tier:'med', name:'Eosinophilic esophagitis', points:[
+  'Links to atopy/allergic disease',
+  'Names presentation: dysphagia, food impaction in young adults',
+  'States diagnostic criterion (≥15 eosinophils/hpf on biopsy) with normal pH study',
+  'Names endoscopic findings (rings, furrows, exudates)',
+  'Gives treatment options: PPI trial, topical steroids, dietary elimination'
+]},
+{cat:'gi', tier:'med', name:'NAFLD / MASLD', points:[
+  'Links to metabolic syndrome, obesity, insulin resistance',
+  'Distinguishes simple steatosis from NASH',
+  'Names non-invasive fibrosis assessment (FIB-4, elastography) before biopsy',
+  'States weight loss as the primary treatment',
+  'Knows it\'s becoming the leading cause of cirrhosis in many populations'
+]},
+{cat:'gi', tier:'med', name:'Autoimmune hepatitis', points:[
+  'Names relevant autoantibodies (ANA, anti-smooth muscle, anti-LKM1) by type',
+  'Notes female predominance and association with other autoimmune disease',
+  'States raised IgG as a supportive lab finding',
+  'Names corticosteroids +/- azathioprine as treatment',
+  'Distinguishes from viral and drug-induced hepatitis'
+]},
+{cat:'gi', tier:'med', name:'Primary biliary cholangitis', points:[
+  'Names anti-mitochondrial antibody as the key diagnostic marker',
+  'States middle-aged woman with pruritus and fatigue as the classic presentation',
+  'Describes cholestatic LFT pattern (raised ALP/GGT)',
+  'Names ursodeoxycholic acid as first-line therapy',
+  'Distinguishes from PSC (antibody, associated disease, cholangiography)'
+]},
+{cat:'gi', tier:'med', name:'Pancreatic head carcinoma', points:[
+  'Recognises painless obstructive jaundice with weight loss as the classic triad context',
+  'Names Courvoisier\'s sign and its interpretation',
+  'States appropriate imaging sequence (US then CT/MRCP)',
+  'Names CA 19-9 as a (non-diagnostic) tumour marker',
+  'Knows resectability (Whipple procedure) depends on vascular involvement'
+]},
+{cat:'gi', tier:'med', name:'Ascites & pleural/pericardial effusion — workup', points:[
+  'Uses SAAG to classify ascites (portal hypertensive vs not)',
+  'Considers autoimmune causes (SLE, Sjögren, systemic sclerosis) in combined ascites/effusion',
+  'Names diagnostic paracentesis as first step, including SBP screening (neutrophil count)',
+  'Distinguishes transudate vs exudate for pleural effusion (Light\'s criteria)',
+  'Links unexplained combined serosal effusions to malignancy or connective tissue disease'
+]},
+{cat:'gi', tier:'med', name:'Mesenteric ischemia', points:[
+  'Recognises "pain out of proportion to exam" as the classic clue',
+  'Distinguishes acute (embolic, often AF-related) from chronic (atherosclerotic, postprandial pain)',
+  'Names CT angiography as the key diagnostic test',
+  'Lists risk factors: AF, atherosclerosis, hypercoagulable states, low-flow states',
+  'Knows lactate rises late — a normal lactate doesn\'t exclude early ischemia'
+]},
+
+// ---------------- HEMATOLOGY ----------------
+{cat:'heme', tier:'vh', name:'Anemia — classification & full differential', points:[
+  'Classifies by reticulocyte count and MCV, with worked examples for each box',
+  'Gives a structured production-vs-destruction-vs-loss framework',
+  'Names the most likely cause by patient context (age, sex, comorbidity)',
+  'Knows which tests confirm each major category',
+  'Avoids listing diseases randomly — builds the classification first, then populates it'
+]},
+{cat:'heme', tier:'vh', name:'Iron deficiency anemia (incl. malabsorptive causes)', points:[
+  'Lists all major causes of iron loss/malabsorption, not just "bleeding"',
+  'Explains hepcidin\'s role in iron metabolism and how inflammation affects iron studies',
+  'Names ferritin, transferrin saturation, and their limitations (ferritin as acute phase reactant)',
+  'Links to celiac disease and GI malignancy workup in adults',
+  'States oral vs IV iron indications appropriately'
+]},
+{cat:'heme', tier:'vh', name:'Macrocytic/megaloblastic anemia & B12 deficiency', points:[
+  'Explains B12\'s neurological role and why deficiency causes subacute combined degeneration',
+  'Lists causes of B12 deficiency: pernicious anemia, malabsorption, dietary, drugs (metformin, PPIs)',
+  'Links autoimmune atrophic gastritis to B12 deficiency',
+  'Distinguishes megaloblastic (B12/folate) from non-megaloblastic macrocytic causes (liver disease, hypothyroid, alcohol)',
+  'Knows to check B12 before folate replacement (masking neuro damage)'
+]},
+{cat:'heme', tier:'vh', name:'Thrombocytopenia — general approach & DD', points:[
+  'Treats it as a diagnosis of exclusion and stresses blood smear review',
+  'Structures DD by mechanism: decreased production, increased destruction, sequestration, dilution',
+  'Distinguishes isolated thrombocytopenia from a broader cytopenia pattern',
+  'Names pseudothrombocytopenia (EDTA clumping) as a mimicker to exclude first',
+  'Adjusts differential appropriately for pregnancy'
+]},
+{cat:'heme', tier:'vh', name:'ITP', points:[
+  'States it as a diagnosis of exclusion with a normal smear otherwise',
+  'Gives first-line treatment (corticosteroids, IVIG for urgent cases)',
+  'Names second-line options (rituximab, TPO-receptor agonists, splenectomy)',
+  'Distinguishes primary from secondary ITP (drug, infection, autoimmune, lymphoproliferative)',
+  'Knows platelet threshold for treatment vs observation'
+]},
+{cat:'heme', tier:'vh', name:'HIT', points:[
+  'States the two types (non-immune type I vs immune type II) and timing (5–10 days after exposure)',
+  'Uses the 4T score correctly',
+  'Explains pathophysiology (PF4-heparin antibody, paradoxical thrombosis risk)',
+  'Names treatment: stop all heparin, start a non-heparin anticoagulant (argatroban, fondaparinux)',
+  'Knows not to give platelets or start warfarin alone acutely (limb gangrene risk)'
+]},
+{cat:'heme', tier:'vh', name:'TTP & ADAMTS13', points:[
+  'Names the pentad (even though not all features are required) and which are most critical',
+  'Explains ADAMTS13 deficiency mechanism and its role in diagnosis',
+  'States classic demographic (young women) and precipitants',
+  'Gives first-line treatment: plasma exchange plus corticosteroids, not platelet transfusion',
+  'Distinguishes from HUS (renal-predominant, often post-diarrheal E. coli)'
+]},
+{cat:'heme', tier:'high', name:'Bleeding diathesis — primary vs secondary hemostasis', points:[
+  'Distinguishes primary (platelet/vWF, mucocutaneous bleeding) from secondary (coagulation factor, deep/joint bleeding)',
+  'Names key screening tests (platelet count, PT, aPTT) and what each reflects',
+  'Links pattern of bleeding to likely category before naming a specific disease',
+  'Knows when to suspect an acquired vs inherited cause',
+  'Structures the answer before diving into individual diseases'
+]},
+{cat:'heme', tier:'high', name:'Von Willebrand disease', points:[
+  'States it as the most common inherited bleeding disorder',
+  'Names the ristocetin cofactor assay as the key diagnostic test',
+  'Distinguishes types 1, 2, and 3 conceptually',
+  'Names desmopressin (DDAVP) as treatment for mild type 1',
+  'Explains the vWF-factor VIII carrier relationship'
+]},
+{cat:'heme', tier:'high', name:'Hemophilia A & B (inherited and acquired)', points:[
+  'States X-linked inheritance and factor VIII (A) vs factor IX (B) deficiency',
+  'Names the bleeding pattern (haemarthrosis, deep muscle bleeds)',
+  'Gives treatment: factor replacement, desmopressin in mild A',
+  'Recognises acquired hemophilia (autoantibody, new bleeding in an elderly/postpartum patient)',
+  'States aPTT prolonged, PT normal as the lab pattern'
+]},
+{cat:'heme', tier:'high', name:'Inherited thrombocytopenias (MYH9, CAMT)', points:[
+  'Names MYH9-related disease and its syndromic associations (macrothrombocytopenia, deafness, cataracts, nephropathy)',
+  'States CAMT presents in infancy with severe thrombocytopenia progressing to aplastic anemia',
+  'Distinguishes platelet size (large in MYH9) as a diagnostic clue',
+  'Discusses family/genetic counselling implications for management',
+  'Distinguishes inherited from acquired thrombocytopenia by history and course'
+]},
+{cat:'heme', tier:'high', name:'Thrombocytopenia in pregnancy', points:[
+  'Gives full DD: gestational thrombocytopenia, HIT, ITP, TTP, DIC, pre-eclampsia/HELLP',
+  'States gestational thrombocytopenia as most common and mildest, resolving postpartum',
+  'Distinguishes by timing, severity, and associated findings (hypertension, hemolysis, LFTs)',
+  'Knows which causes require urgent delivery vs expectant management',
+  'Names appropriate workup sequence'
+]},
+{cat:'heme', tier:'high', name:'Inherited & acquired thrombophilia', points:[
+  'Names Factor V Leiden, prothrombin G20210A, protein C/S deficiency, antithrombin III deficiency',
+  'States malignancy as an important acquired cause',
+  'Explains when thrombophilia testing is actually indicated (not routinely after first provoked VTE)',
+  'Knows testing should be delayed/avoided during acute thrombosis or anticoagulation for some assays',
+  'Links inherited thrombophilia to recurrent pregnancy loss workup'
+]},
+{cat:'heme', tier:'high', name:'Antiphospholipid syndrome & polyabortivity', points:[
+  'States clinical criteria (thrombosis or pregnancy morbidity) plus lab criteria (lupus anticoagulant, anticardiolipin, anti-β2GPI)',
+  'Requires antibody persistence on repeat testing 12 weeks apart',
+  'Names warfarin (not a DOAC) as treatment in triple-positive APS',
+  'Lists other causes of recurrent pregnancy loss: protein C/S deficiency, ATIII deficiency, factor V Leiden, prothrombin mutation',
+  'Distinguishes primary APS from APS secondary to SLE'
+]},
+{cat:'heme', tier:'high', name:'DVT', points:[
+  'Names risk factors and inherited causes to screen for in unprovoked cases',
+  'States LMWH first-line initially, DOAC contraindications relevant here too',
+  'Uses compression ultrasound as the diagnostic test',
+  'Links to HIT if thrombocytopenia develops on heparin',
+  'Gives anticoagulation duration logic (same framework as PE)'
+]},
+{cat:'heme', tier:'high', name:'Hemolytic anemia & hemolysis parameters', points:[
+  'Names the key labs: raised LDH, raised indirect bilirubin, low haptoglobin, raised reticulocytes',
+  'Distinguishes intravascular (hemoglobinuria, low haptoglobin) from extravascular hemolysis',
+  'Splits into immune (Coombs positive) vs non-immune causes',
+  'Names warm vs cold autoimmune hemolytic anemia',
+  'Uses blood smear findings (schistocytes, spherocytes) to narrow the cause'
+]},
+{cat:'heme', tier:'high', name:'Hereditary spherocytosis', points:[
+  'States the membrane defect mechanism (spectrin/ankyrin) and autosomal dominant inheritance',
+  'Names the classic triad: anemia, jaundice, splenomegaly',
+  'Uses osmotic fragility test / EMA binding test as diagnostic',
+  'Links post-febrile jaundice presentation to hemolytic crisis',
+  'Names splenectomy as definitive treatment in significant cases'
+]},
+{cat:'heme', tier:'med', name:'Anemia of chronic disease & hepcidin', points:[
+  'Explains hepcidin\'s role in trapping iron in macrophages during inflammation',
+  'States the typical pattern: low/normal ferritin discordant from clinical inflammation, low TIBC',
+  'Distinguishes from true iron deficiency using ferritin thresholds and inflammatory markers',
+  'Names common underlying conditions: chronic infection, malignancy, autoimmune disease, CKD',
+  'Knows it\'s usually mild-moderate and normocytic (can become microcytic)'
+]},
+{cat:'heme', tier:'med', name:'Anemia of chronic kidney disease', points:[
+  'Explains the primary mechanism: reduced erythropoietin production',
+  'Names contributing factors: iron deficiency, inflammation, reduced RBC lifespan',
+  'States erythropoiesis-stimulating agents as treatment once iron replete',
+  'Knows target hemoglobin range and risks of over-correction',
+  'Distinguishes from anemia of chronic disease conceptually'
+]},
+{cat:'heme', tier:'med', name:'Aplastic anemia', points:[
+  'States it as pancytopenia with hypocellular bone marrow',
+  'Names causes: idiopathic/autoimmune, drugs, viral (parvovirus, hepatitis), radiation',
+  'Distinguishes from MDS (marrow is hypocellular, not dysplastic)',
+  'Gives treatment options: immunosuppression vs allogeneic stem cell transplant by age/donor availability',
+  'Recognises the association with PNH'
+]},
+
+// ---------------- ENDOCRINE ----------------
+{cat:'endo', tier:'vh', name:'Diabetes mellitus (incl. MODY, LADA)', points:[
+  'Gives full diagnostic criteria and values for T1DM and T2DM (fasting glucose, OGTT, HbA1c)',
+  'Distinguishes T1DM (autoimmune, C-peptide low, antibodies) from T2DM (insulin resistance)',
+  'Defines MODY (monogenic, young, strong family history, often not insulin-dependent) and LADA (adult-onset, slow autoimmune)',
+  'Names drug classes and mechanisms for both types (metformin, SGLT2i, GLP-1 RA, sulfonylureas, insulin)',
+  'Knows which drugs are appropriate/contraindicated by renal function and by type'
+]},
+{cat:'endo', tier:'med', name:'Thyroid disease (incl. Hashimoto)', points:[
+  'Distinguishes primary vs secondary hyper/hypothyroidism by TSH pattern',
+  'Names Hashimoto as the most common cause of hypothyroidism, with anti-TPO antibodies',
+  'Lists causes of hyperthyroidism (Graves, toxic nodule, thyroiditis) and distinguishing features',
+  'Links Hashimoto to other autoimmune conditions when relevant (e.g. atypical GI presentations)',
+  'Knows appropriate first-line treatment for each condition'
+]},
+{cat:'endo', tier:'med', name:'Adrenal insufficiency / Addison', points:[
+  'Distinguishes primary (adrenal, includes mineralocorticoid loss, hyperpigmentation) from secondary (pituitary/steroid withdrawal)',
+  'States key labs: low cortisol, high ACTH in primary, electrolyte pattern (low Na, high K in primary)',
+  'Names the ACTH (synacthen) stimulation test as the confirmatory test',
+  'Recognises adrenal crisis as an emergency needing immediate hydrocortisone',
+  'Links macrocytic anemia with autoimmune background to Addison in a differential'
+]},
+
+// ---------------- RENAL ----------------
+{cat:'renal', tier:'high', name:'Acute kidney injury (incl. contrast nephropathy)', points:[
+  'Classifies pre-renal / intrinsic / post-renal with a mechanism for each',
+  'Uses KDIGO-type criteria concept (creatinine rise / urine output) to stage severity',
+  'Names contrast-induced nephropathy risk factors and prevention (hydration, minimising contrast volume)',
+  'Distinguishes AKI from CKD using history, imaging (kidney size), and prior labs',
+  'Knows when to consider urgent dialysis (refractory hyperkalemia, acidosis, fluid overload, uraemic symptoms)'
+]},
+
+// ---------------- IMMUNOLOGY / ID ----------------
+{cat:'id', tier:'high', name:'Fever + lymphadenopathy / FUO', points:[
+  'Structures the infectious differential: EBV, CMV, toxoplasmosis, viral hepatitis, HIV',
+  'Knows the 8 human herpesvirus types and at least one association each',
+  'Distinguishes localized vs generalized lymphadenopathy in the differential',
+  'Builds a broader FUO framework beyond infection (malignancy, autoimmune/autoinflammatory, drug fever)',
+  'Names the relevant history/exam/test sequence for a mono-like syndrome'
+]},
+{cat:'id', tier:'med', name:'Systemic autoimmune disease (SLE, Sjögren, systemic sclerosis)', points:[
+  'Names at least 2 defining features per disease',
+  'Links to serosal effusions (ascites, pleural/pericardial) as a presentation',
+  'Names relevant autoantibodies for each (ANA/dsDNA, anti-Ro/La, anti-centromere/Scl-70)',
+  'Knows these are multisystem diseases requiring a broad review of systems',
+  'Distinguishes overlapping features from each other'
+]},
+{cat:'id', tier:'med', name:'Adult-onset Still\'s disease', points:[
+  'Recognises the FUO + hyperferritinemia combination as the classic clue',
+  'Names other features: salmon-pink rash, arthralgia/arthritis, sore throat',
+  'States markedly elevated ferritin (often disproportionate) as a key lab clue',
+  'Knows it\'s a diagnosis of exclusion after infection and malignancy are ruled out',
+  'Names treatment: NSAIDs, corticosteroids, IL-1/IL-6 blockade for refractory disease'
+]},
+{cat:'id', tier:'med', name:'TH2 disorders & targeted monoclonals', points:[
+  'Names IL-5 (mepolizumab, reslizumab), anti-IL-5Rα (benralizumab), anti-IgE (omalizumab), anti-IL-4Rα (dupilumab)',
+  'Links these to severe eosinophilic asthma and other TH2-driven disease',
+  'Explains basic TH2 pathway concept (IL-4, IL-5, IL-13 driving eosinophilia and IgE)',
+  'Knows these are add-on/biologic therapies for refractory disease, not first-line',
+  'Connects to the IBD biologics question (different target, same "know the biologic by name" theme)'
+]},
+{cat:'id', tier:'med', name:'EBV / CMV / toxoplasmosis & the 8 herpesviruses', points:[
+  'Lists all 8 human herpesviruses and at least one disease association each',
+  'Distinguishes EBV, CMV and toxoplasmosis presentations (all can mimic each other)',
+  'Names appropriate confirmatory tests for each (heterophile/EBV serology, CMV PCR, toxo serology)',
+  'Knows which are dangerous in immunocompromised/pregnant patients specifically',
+  'Builds the history questions that discriminate between them (exposure, immunosuppression, contact with cats/undercooked meat for toxo)'
+]},
+
+// ---------------- OTHER ----------------
+{cat:'other', tier:'med', name:'Delirium in the elderly', points:[
+  'Distinguishes delirium (acute, fluctuating, reduced attention) from dementia (chronic, stable attention)',
+  'Names common precipitants: infection/sepsis, drugs, metabolic derangement, urinary retention, pain',
+  'Structures workup around finding and treating the underlying cause, not just sedating',
+  'Recognises hypoactive delirium is often missed',
+  'Knows non-pharmacological measures are first-line for management'
+]},
+{cat:'other', tier:'med', name:'Comorbidity vs multimorbidity, clinical complexity', points:[
+  'Defines comorbidity (index disease + others) vs multimorbidity (no single index condition)',
+  'Discusses how multimorbidity changes diagnostic and treatment priorities',
+  'Names polypharmacy and conflicting guideline recommendations as a practical challenge',
+  'Links to shared decision-making and individualised goals of care',
+  'Shows awareness this is a "how you think," not "what you know" question'
+]},
+{cat:'other', tier:'med', name:'Chronic alcoholism — workup', points:[
+  'Structures a systems-based assessment: liver, GI, neurological, nutritional, psychiatric',
+  'Names relevant labs (macrocytosis, raised GGT, AST:ALT >2)',
+  'Considers Wernicke encephalopathy risk and thiamine replacement before glucose',
+  'Screens for withdrawal risk and CIWA-type assessment',
+  'Links to a broader differential when it appears as an incidental finding in another vignette (e.g. syncope)'
+]},
+{cat:'other', tier:'med', name:'Acid–base disorders & blood gas interpretation', points:[
+  'Uses a stepwise approach: pH, primary disorder, compensation, anion gap',
+  'Calculates anion gap correctly and names causes of a raised-gap metabolic acidosis',
+  'Recognises mixed disorders rather than forcing a single-disorder explanation',
+  'Links respiratory alkalosis to PE / anxiety / early sepsis appropriately',
+  'Interprets a blood gas in the context of a specific vignette (e.g. PE, DKA, severe asthma) rather than in the abstract'
+]}
+];
+
+/* ---------------- STATE ---------------- */
+let activeCat = 'all';
+let currentRotation = 0;
+let spinning = false;
+let caseCounter = 0;
+let currentTopic = null;
+
+const wheelSvg = document.getElementById('wheelSvg');
+const chipsEl = document.getElementById('chips');
+const poolCountEl = document.getElementById('poolCount');
+const spinBtn = document.getElementById('spinBtn');
+const backdrop = document.getElementById('backdrop');
+const closeBtn = document.getElementById('closeBtn');
+const spinAgainBtn = document.getElementById('spinAgainBtn');
+
+function pool(){
+  return activeCat === 'all' ? TOPICS : TOPICS.filter(t => t.cat === activeCat);
+}
+
+function buildChips(){
+  const all = document.createElement('div');
+  all.className = 'chip active';
+  all.textContent = 'All topics';
+  all.dataset.cat = 'all';
+  chipsEl.appendChild(all);
+  CATS.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'chip';
+    el.textContent = c.label;
+    el.dataset.cat = c.id;
+    chipsEl.appendChild(el);
+  });
+  chipsEl.addEventListener('click', e=>{
+    const chip = e.target.closest('.chip');
+    if(!chip || spinning) return;
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    activeCat = chip.dataset.cat;
+    drawWheel();
+  });
+}
+
+function updatePoolCount(){
+  const p = pool();
+  const label = activeCat==='all' ? 'all categories' : CATS.find(c=>c.id===activeCat).label;
+  poolCountEl.innerHTML = `<b>${p.length}</b> topics in play &nbsp;·&nbsp; ${label}`;
+}
+
+/* ---------------- WHEEL DRAWING ---------------- */
+function polarToCartesian(cx,cy,r,angleDeg){
+  const rad = (angleDeg - 90) * Math.PI/180;
+  return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+}
+function arcPath(cx,cy,r,startAngle,endAngle){
+  const start = polarToCartesian(cx,cy,r,endAngle);
+  const end = polarToCartesian(cx,cy,r,startAngle);
+  const largeArc = endAngle - startAngle <= 180 ? 0 : 1;
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+}
+
+let currentArcs = []; // {topic, startAngle, endAngle, weight}
+
+function drawWheel(){
+  wheelSvg.innerHTML = '';
+  wheelSvg.style.transition = 'none';
+  wheelSvg.style.transform = `rotate(${currentRotation}deg)`;
+
+  const items = pool();
+  updatePoolCount();
+  spinBtn.disabled = items.length === 0;
+
+  const totalW = items.reduce((s,t)=>s+WEIGHT[t.tier],0);
+  let angle = 0;
+  currentArcs = [];
+  const cx=300, cy=300, r=290;
+
+  items.forEach((t,i)=>{
+    const w = WEIGHT[t.tier];
+    const sweep = (w/totalW)*360;
+    const start = angle, end = angle+sweep;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', arcPath(cx,cy,r,start,end));
+    const color = t.tier==='vh' ? '#993C1D' : t.tier==='high' ? '#E8975E' : '#F0C36A';
+    path.setAttribute('fill', color);
+    path.setAttribute('stroke', '#182422');
+    path.setAttribute('stroke-width', '1.5');
+    wheelSvg.appendChild(path);
+    currentArcs.push({topic:t, startAngle:start, endAngle:end, weight:w});
+    angle = end;
+  });
+
+  // outer rim
+  const rim = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  rim.setAttribute('cx',300); rim.setAttribute('cy',300); rim.setAttribute('r',295);
+  rim.setAttribute('fill','none');
+  rim.setAttribute('stroke','#0f1815');
+  rim.setAttribute('stroke-width','8');
+  wheelSvg.appendChild(rim);
+
+  requestAnimationFrame(()=>{ wheelSvg.style.transition = ''; });
+}
+
+function weightedPick(items){
+  const totalW = items.reduce((s,t)=>s+WEIGHT[t.tier],0);
+  let r = Math.random()*totalW;
+  for(const t of items){
+    r -= WEIGHT[t.tier];
+    if(r<=0) return t;
+  }
+  return items[items.length-1];
+}
+
+function spin(){
+  if(spinning) return;
+  const items = pool();
+  if(items.length===0) return;
+  spinning = true;
+  spinBtn.disabled = true;
+
+  const winner = weightedPick(items);
+  const arc = currentArcs.find(a=>a.topic===winner);
+  const jitter = (Math.random()*0.6+0.2) * (arc.endAngle-arc.startAngle) - (arc.endAngle-arc.startAngle)/2;
+  const targetMid = (arc.startAngle+arc.endAngle)/2 + jitter*0.5;
+
+  // normalize current rotation mod 360, then add spins + alignment
+  const spins = 5 + Math.floor(Math.random()*3);
+  const currentMod = ((currentRotation % 360) + 360) % 360;
+  // we want (currentMod + delta) mod 360 == -targetMid mod 360 (since pointer fixed at top=0, wedge angle measured clockwise from top)
+  let delta = ((-targetMid) - currentMod + 360*10) % 360;
+  currentRotation += spins*360 + delta;
+
+  wheelSvg.style.transform = `rotate(${currentRotation}deg)`;
+
+  setTimeout(()=>{
+    spinning = false;
+    spinBtn.disabled = false;
+    showTicket(winner);
+  }, 4300);
+}
+
+/* ---------------- TICKET ---------------- */
+function showTicket(topic){
+  currentTopic = topic;
+  caseCounter++;
+  document.getElementById('caseNo').textContent = String(caseCounter).padStart(3,'0');
+  const tierBadge = document.getElementById('tierBadge');
+  tierBadge.className = 'tier-badge ' + topic.tier;
+  tierBadge.textContent = topic.tier==='vh' ? 'VERY HIGH' : topic.tier==='high' ? 'HIGH' : 'MEDIUM';
+  document.getElementById('catTag').textContent = CATS.find(c=>c.id===topic.cat).label;
+  document.getElementById('topicName').textContent = topic.name;
+
+  const list = document.getElementById('pointsList');
+  list.innerHTML = '';
+  topic.points.forEach(p=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="box"></span><span class="txt">${p}</span>`;
+    li.addEventListener('click', ()=> li.classList.toggle('checked'));
+    list.appendChild(li);
+  });
+
+  backdrop.classList.add('show');
+}
+
+closeBtn.addEventListener('click', ()=> backdrop.classList.remove('show'));
+backdrop.addEventListener('click', e=>{ if(e.target===backdrop) backdrop.classList.remove('show'); });
+spinAgainBtn.addEventListener('click', ()=>{ backdrop.classList.remove('show'); setTimeout(spin, 200); });
+spinBtn.addEventListener('click', spin);
+
+buildChips();
+drawWheel();
+</script>
+</body>
+</html>
